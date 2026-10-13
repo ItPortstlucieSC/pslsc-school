@@ -57,24 +57,23 @@ Las rutas son absolutas desde la raíz (`/assets/…`): serví la raíz del repo
 El `http.server` de Python no soporta pedidos `Range`: en Chrome el intro anda, pero Safari no reproduce el video
 (se saltea el intro). Vercel sí los soporta.
 
-## Conectar ActiveCampaign (antes de difundir la URL)
+## ActiveCampaign (conectado)
 
-Mientras falte la config, el form valida, muestra *"Something went wrong on our end"* y deja un
-`console.error`: **no envía y no finge éxito**.
+Form **16** "Soccer School — Pre-registration" de `portstluciesc.activehosted.com`. Todo el mapeo vive en
+`config.js`: campos estándar (`fullname`, `email`), `field[54][]` edades (opciones `5`…`13`), `field[55][]`
+consentimiento (`consentValue`, texto exacto de la opción) y `field[56…60]` UTM. Los `tokens` (`u`, `f`, `act`,
+`v`, `or`…) son los campos ocultos del "full embed": si se re-crea el form en AC, copiarlos de nuevo.
 
-1. **En AC**, crear el form *"Soccer School — Pre-registration"* que suscriba a la lista del mismo nombre, con:
-   *Full Name* · *Email* · *Kids' ages* (checkbox con opciones `5` a `13`) · *Consent* (checkbox) ·
-   *utm_source*, *utm_medium*, *utm_campaign*, *utm_content*, *utm_term* (ocultos). Idealmente, con un email
-   de confirmación automático.
-2. Del **código de embed** del form: el subdominio (`https://<account>.activehosted.com`) → `account`, y el id
-   (`embed.php?id=N`) → `formId`, en `config.js`.
-3. Del **export "full embed"**: el `name` de cada campo → `config.js > fields` (los checkboxes son `field[NN][]`).
-4. **Probar**: abrir `/?utm_source=test`, preinscribir un email de prueba y verificar en AC nombre, edades,
-   consentimiento y UTM. Después, borrar el contacto de prueba.
+Cómo funciona el envío: `school.js` hace un **POST directo** (`fetch`) a `proc.php?jsonp=true` con los mismos campos
+que mandaría el embed (`buildPostPairs` en `form.js`). No se carga ningún JS de AC: su embed envía inyectando un
+`<script>` a su dominio, y Osano o un bloqueador lo frenan sin avisar (bug real en el sitio del club, 24-09-2026).
+AC responde JSON: `show_thank_you` → éxito; `show_error` → se muestra error y queda el motivo en consola. Timeout 15 s.
 
-Cómo funciona el envío: la página monta el *embed simple* de AC oculto en `#ac-proxy`, le copia los valores
-y dispara su submit (el mismo patrón que tryouts, newsletter y partners en el sitio; ver el comentario de
-`school.js`). El éxito se detecta en `._form-thank-you` y el error en `._form_error`, con un timeout de 15 s.
+**UTM:** para que AC los guarde, los campos `utm_*` tienen que estar en el form 16 (como campos ocultos). Si no
+están en el form, AC los ignora sin error.
+
+**Probar**: abrir `/?utm_source=test`, preinscribir un email de prueba y verificar en AC nombre, edades,
+consentimiento y UTM. Después, borrar el contacto de prueba.
 
 ## Analytics (opcional)
 

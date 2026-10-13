@@ -51,3 +51,21 @@ test('buildProxyPlan: mapea campos, edades, consentimiento y solo los UTM config
   assert.deepEqual(plan.checkGroups, [['field[50][]', ['6', '9']]]);
   assert.deepEqual(plan.checks, ['field[51][]']);
 });
+
+test('buildPostPairs arma el POST como el embed de AC (tokens, texto, checkboxes con ~|)', async () => {
+  const { buildPostPairs } = await import('../../form.js');
+  const { CONFIG } = await import('../../config.js');
+  const ac = CONFIG.activeCampaign;
+  const plan = buildProxyPlan(
+    { parentName: ' Ana Pérez ', email: 'ana@example.com', kidsAges: ['6', '9'], consent: true },
+    { utm_source: 'ig' },
+    ac.fields,
+  );
+  const pairs = buildPostPairs(plan, ac.tokens, ac.consentValue);
+  assert.deepEqual(pairs.slice(0, 8).map(([k]) => k), ['u', 'f', 's', 'c', 'm', 'act', 'v', 'or']);
+  assert.ok(pairs.some(([k, v]) => k === 'fullname' && v === 'Ana Pérez'));
+  assert.ok(pairs.some(([k, v]) => k === 'field[58]' && v === 'ig'));
+  assert.deepEqual(pairs.filter(([k]) => k === 'field[54][]').map(([, v]) => v), ['~|', '6', '9']);
+  assert.deepEqual(pairs.filter(([k]) => k === 'field[55][]').map(([, v]) => v), ['~|', ac.consentValue]);
+  assert.equal(isConfigured(ac), true);
+});
