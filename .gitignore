@@ -1,0 +1,11 @@
+.DS_Store
+Thumbs.db
+*.swp
+*~
+*.log
+node_modules/
+.vercel
+.env*
+__pycache__/
+*.pyc
+.superpowers/
