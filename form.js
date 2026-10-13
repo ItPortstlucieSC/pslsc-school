@@ -1,6 +1,6 @@
 /**
  * Lógica pura del formulario de preinscripción (sin DOM): lectura de UTM, validación y armado del
- * plan de campos para el form oculto de ActiveCampaign. Tests: node --test "tools/tests/*.test.mjs"
+ * plan de campos y del POST directo a ActiveCampaign. Tests: node --test "tools/tests/*.test.mjs"
  */
 
 export const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
@@ -52,4 +52,23 @@ export function buildProxyPlan(values, utms, fields) {
     checkGroups: [[fields.kidsAges, values.kidsAges.map(String)]],
     checks: values.consent ? [fields.consent] : [],
   };
+}
+
+/**
+ * Pares [name, value] del POST directo a proc.php de ActiveCampaign, en el mismo orden y formato que
+ * serializa el embed de AC: primero los campos ocultos del form (tokens), después texto, y en cada
+ * checkbox el marcador "~|" seguido de las opciones tildadas.
+ */
+export function buildPostPairs(plan, tokens, consentValue) {
+  const pairs = Object.entries(tokens || {}).map(([k, v]) => [k, String(v)]);
+  for (const [name, value] of plan.text) pairs.push([name, value]);
+  for (const [name, values] of plan.checkGroups) {
+    pairs.push([name, '~|']);
+    for (const value of values) pairs.push([name, value]);
+  }
+  for (const name of plan.checks) {
+    pairs.push([name, '~|']);
+    pairs.push([name, consentValue]);
+  }
+  return pairs;
 }
