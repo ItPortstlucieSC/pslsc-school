@@ -44,7 +44,7 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scrollbar-gutter: stable; } /* gutter fijo: al sacar el overflow:hidden del intro no aparece la barra y no salta todo (CLS 0,83 en PageSpeed) */
 body {
   margin: 0;
   background: var(--paper);
