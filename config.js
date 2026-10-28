@@ -30,7 +30,7 @@ export const CONFIG = {
     consentValue: "I'm the parent or guardian and agree to be contacted about the Soccer School.",
   },
   analytics: {
-    metaPixelId: '',            // vacío = no se carga el pixel
+    metaPixelId: '1148178920880972', // Meta/Facebook Pixel del club (pasado por Agustín Sastre, 2026-10-28). Vacío = no se carga
     ga4Id: '',                  // vacío = no se carga GA4 (formato 'G-XXXXXXX')
   },
 };
