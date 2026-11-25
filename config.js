@@ -13,12 +13,12 @@ export const CONFIG = {
     formId: '16',
     // Campos ocultos del "full embed" de AC (u, f, s, c, m, act, v, or). Si se re-crea el form en AC,
     // copiarlos de nuevo del export "full embed".
-    tokens: { u: '16', f: '16', s: '', c: '0', m: '0', act: 'sub', v: '2', or: '22b4bda6-acb8-4f31-b2b1-507aab255d36' },
+    tokens: { u: '16', f: '16', s: '', c: '0', m: '0', act: 'sub', v: '2', or: '39a59b11-8728-45c1-aade-0197017a1444' },
     // Campo nuestro → `name` del campo en el form de AC (del export "full embed").
     fields: {
       parentName: 'fullname',   // campo estándar "Full Name" de AC
       email: 'email',           // campo estándar de AC
-      zipCode: '',              // PENDIENTE: campo de texto "ZIP code" en el form 16 de AC → poner acá su name (ej. 'field[61]'). Vacío = el ZIP no se envía
+      zipCode: 'field[2]',      // campo de contacto "ZIP Code" (id 2) en el form 16
       kidsAges: 'field[54][]',  // checkbox "Kids' ages", opciones "5"…"13"
       consent: 'field[55][]',   // checkbox "Consent" (una sola opción, ver consentValue)
       utm_source: 'field[58]',
