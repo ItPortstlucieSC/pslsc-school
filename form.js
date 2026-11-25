@@ -5,6 +5,8 @@
 
 export const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// ZIP de EE. UU.: 5 dígitos, o ZIP+4 (12345-6789 / 123456789). A AC se mandan solo los 5 primeros.
+const ZIP_RE = /^\d{5}(-?\d{4})?$/;
 const REQUIRED_FIELDS = ['parentName', 'email', 'kidsAges', 'consent'];
 
 /** UTM presentes en la query string (recortados a 200 caracteres; los vacíos se omiten). */
@@ -19,15 +21,25 @@ export function readUtms(search) {
 }
 
 /** Primer error en el orden visual del form, o null si todo está bien. */
-export function validate({ parentName, email, kidsAges, consent }) {
+export function validate({ parentName, email, zipCode, kidsAges, consent }) {
   if (!parentName || !parentName.trim()) return { field: 'parentName', message: 'Please add your name.' };
   if (!EMAIL_RE.test((email || '').trim())) return { field: 'email', message: 'Enter a valid email so we can reach you.' };
+  if (!ZIP_RE.test((zipCode || '').trim())) return { field: 'zipCode', message: 'Enter your 5-digit ZIP code.' };
   if (!kidsAges || kidsAges.length === 0) return { field: 'kidsAges', message: 'Pick at least one age.' };
   if (!consent) return { field: 'consent', message: 'Please confirm you’re the parent or guardian.' };
   return null;
 }
 
-/** true si la config de AC alcanza para enviar: cuenta, form y los cuatro campos obligatorios. */
+/** ZIP normalizado: los 5 primeros dígitos. */
+export function normalizeZip(zipCode) {
+  return (zipCode || '').trim().slice(0, 5);
+}
+
+/**
+ * true si la config de AC alcanza para enviar: cuenta, form y los cuatro campos obligatorios.
+ * zipCode NO está en la lista a propósito: si todavía no se mapeó en config.js, el form sigue enviando
+ * (sin el ZIP) en vez de cortarse. Ver README → "ActiveCampaign".
+ */
 export function isConfigured(ac) {
   if (!ac || !ac.account || !ac.formId || !ac.fields) return false;
   return REQUIRED_FIELDS.every((key) => Boolean(ac.fields[key]));
@@ -44,6 +56,7 @@ export function buildProxyPlan(values, utms, fields) {
     [fields.parentName, values.parentName.trim()],
     [fields.email, values.email.trim()],
   ];
+  if (fields.zipCode && values.zipCode) text.push([fields.zipCode, normalizeZip(values.zipCode)]);
   for (const key of UTM_KEYS) {
     if (fields[key] && utms[key]) text.push([fields[key], utms[key]]);
   }

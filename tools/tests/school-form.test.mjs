@@ -1,9 +1,9 @@
 // Tests de la lógica pura del form de la landing del Soccer School.  Run: node --test "tools/tests/*.test.mjs"
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readUtms, validate, isConfigured, buildProxyPlan } from '../../form.js';
+import { readUtms, validate, isConfigured, buildProxyPlan, normalizeZip } from '../../form.js';
 
-const valid = { parentName: 'Ana Pérez', email: 'ana@example.com', kidsAges: ['6', '9'], consent: true };
+const valid = { parentName: 'Ana Pérez', email: 'ana@example.com', zipCode: '34986', kidsAges: ['6', '9'], consent: true };
 
 test('readUtms: solo claves utm_*, recortadas y sin vacías', () => {
   assert.deepEqual(
@@ -20,9 +20,28 @@ test('readUtms: corta valores largos a 200 caracteres', () => {
 test('validate: devuelve el primer error en el orden visual del form', () => {
   assert.equal(validate({ ...valid, parentName: '  ' }).field, 'parentName');
   assert.equal(validate({ ...valid, email: 'ana@' }).field, 'email');
+  assert.equal(validate({ ...valid, zipCode: '' }).field, 'zipCode');
   assert.equal(validate({ ...valid, kidsAges: [] }).field, 'kidsAges');
   assert.equal(validate({ ...valid, consent: false }).field, 'consent');
-  assert.equal(validate({ parentName: '', email: '', kidsAges: [], consent: false }).field, 'parentName');
+  assert.equal(validate({ parentName: '', email: '', zipCode: '', kidsAges: [], consent: false }).field, 'parentName');
+});
+
+test('validate: ZIP de 5 dígitos o ZIP+4; nada de letras ni largos raros', () => {
+  for (const ok of ['34986', ' 34986 ', '34986-1234', '349861234']) assert.equal(validate({ ...valid, zipCode: ok }), null, ok);
+  for (const bad of ['3498', '349866', 'ABCDE', '34986-12', '34 986']) assert.equal(validate({ ...valid, zipCode: bad }).field, 'zipCode', bad);
+});
+
+test('normalizeZip: se queda con los 5 primeros dígitos', () => {
+  assert.equal(normalizeZip(' 34986-1234 '), '34986');
+  assert.equal(normalizeZip('34986'), '34986');
+});
+
+test('buildProxyPlan: el ZIP va después del email solo si está mapeado en config', () => {
+  const base = { parentName: 'fullname', email: 'email', kidsAges: 'field[50][]', consent: 'field[51][]' };
+  const withZip = buildProxyPlan({ ...valid, zipCode: '34986-1234' }, {}, { ...base, zipCode: 'field[61]' });
+  assert.deepEqual(withZip.text, [['fullname', 'Ana Pérez'], ['email', 'ana@example.com'], ['field[61]', '34986']]);
+  const noZip = buildProxyPlan(valid, {}, { ...base, zipCode: '' });
+  assert.deepEqual(noZip.text, [['fullname', 'Ana Pérez'], ['email', 'ana@example.com']]);
 });
 
 test('validate: null con datos completos', () => {

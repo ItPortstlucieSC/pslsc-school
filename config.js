@@ -18,6 +18,7 @@ export const CONFIG = {
     fields: {
       parentName: 'fullname',   // campo estándar "Full Name" de AC
       email: 'email',           // campo estándar de AC
+      zipCode: '',              // PENDIENTE: campo de texto "ZIP code" en el form 16 de AC → poner acá su name (ej. 'field[61]'). Vacío = el ZIP no se envía
       kidsAges: 'field[54][]',  // checkbox "Kids' ages", opciones "5"…"13"
       consent: 'field[55][]',   // checkbox "Consent" (una sola opción, ver consentValue)
       utm_source: 'field[58]',

@@ -61,7 +61,12 @@ El `http.server` de Python no soporta pedidos `Range`: en Chrome el intro anda, 
 
 Form **16** "Soccer School — Pre-registration" de `portstluciesc.activehosted.com`. Todo el mapeo vive en
 `config.js`: campos estándar (`fullname`, `email`), `field[54][]` edades (opciones `5`…`13`), `field[55][]`
-consentimiento (`consentValue`, texto exacto de la opción) y `field[56…60]` UTM. Los `tokens` (`u`, `f`, `act`,
+consentimiento (`consentValue`, texto exacto de la opción) y `field[56…60]` UTM.
+
+**ZIP code (pendiente en AC):** el form de la landing pide el ZIP (obligatorio, 5 dígitos o ZIP+4; a AC van los 5
+primeros). Para que llegue a AC hay que agregar al form 16 un campo de texto "ZIP code" y poner su `name`
+(`field[NN]`, del export "full embed") en `config.js > fields.zipCode`. Mientras esté vacío, el form envía igual,
+sin el ZIP. Los `tokens` (`u`, `f`, `act`,
 `v`, `or`…) son los campos ocultos del "full embed": si se re-crea el form en AC, copiarlos de nuevo.
 
 Cómo funciona el envío: `school.js` hace un **POST directo** (`fetch`) a `proc.php?jsonp=true` con los mismos campos
@@ -72,7 +77,7 @@ AC responde JSON: `show_thank_you` → éxito; `show_error` → se muestra error
 **UTM:** para que AC los guarde, los campos `utm_*` tienen que estar en el form 16 (como campos ocultos). Si no
 están en el form, AC los ignora sin error.
 
-**Probar**: abrir `/?utm_source=test`, preinscribir un email de prueba y verificar en AC nombre, edades,
+**Probar**: abrir `/?utm_source=test`, preinscribir un email de prueba y verificar en AC nombre, ZIP, edades,
 consentimiento y UTM. Después, borrar el contacto de prueba.
 
 ## Analytics (opcional)
