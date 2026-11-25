@@ -123,6 +123,7 @@ function initForm() {
     const values = {
       parentName: String(data.get('parentName') || ''),
       email: String(data.get('email') || '').trim(),
+      zipCode: String(data.get('zipCode') || '').trim(),
       kidsAges: data.getAll('kidsAges').map(String),
       consent: data.get('consent') === 'on',
     };
